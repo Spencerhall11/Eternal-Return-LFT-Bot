@@ -110,7 +110,7 @@ class Recruitment(commands.Cog):
         except discord.Forbidden:
             await interaction.response.send_message("Enable DMs first!", ephemeral=True)
 
-    @app_commands.command(name="lfp", description="Search for players by role or character")
+ @app_commands.command(name="lfp", description="Search for players by role or character")
     @app_commands.describe(query="The role or character you are looking for")
     async def lfp(self, interaction: discord.Interaction, query: str):
         await interaction.response.defer(ephemeral=True)
@@ -122,9 +122,10 @@ class Recruitment(commands.Cog):
         response_text = f"**Players matching '{query}':**\n"
         
         for p in matches:
-            mention = f"<@{p['DiscordID']}>"
-             
-            name = p.get('AccountName', p.get('Account Name', 'N/A'))
+            d_id = p.get('Discord ID') or p.get('DiscordID')
+            mention = f"<@{d_id}>" if d_id else "Unknown Player"
+            
+            name = p.get('Account Name') or p.get('AccountName') or "N/A"
             
             response_text += f"• {mention} ({name})\n"
 
