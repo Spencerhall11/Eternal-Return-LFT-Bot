@@ -7,11 +7,17 @@ load_dotenv()
 SHEET_NAME = os.getenv('SHEET_NAME')
 
 class SheetManager:
-    def __init__(self):
-        #connect with service account token
-        self.gc = gspread.service_account(filename='service_account.json')
+   def __init__(self):
+        google_creds_raw = os.getenv('GOOGLE_CREDS_JSON')
 
-        #open that specific sheets
+        if google_creds_raw:
+            # Parse the string into a dictionary
+            creds_dict = json.loads(google_creds_raw)
+            self.gc = gspread.service_account_from_dict(creds_dict)
+        else:
+            self.gc = gspread.service_account(filename='service_account.json')
+
+        # Open the specific sheet
         self.sh = self.gc.open(SHEET_NAME).sheet1
 
     def sync_player(self, row_data):
