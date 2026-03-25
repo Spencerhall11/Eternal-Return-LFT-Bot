@@ -1,25 +1,44 @@
 import gspread
 import os
 import json
+from google.oauth2 import service_account
 from dotenv import load_dotenv
+
+
+google_json = os.environ.get('GOOGLE_JSON_CONTENT')
+
+if google_json:
+    info = json.loads(google_json)
+    creds = service_account.Credentials.from_service_account_info(
+        info, scopes=['https://www.googleapis.com/auth/spreadsheets']
+    )
+else:
+    creds = service_account.Credentials.from_service_account_file(
+        'service_account.json', scopes=['https://www.googleapis.com/auth/spreadsheets']
+    )
 
 #load sheet
 load_dotenv()
 SHEET_NAME = os.getenv('SHEET_NAME')
 
 class SheetManager:
-   def __init__(self):
-        google_creds_raw = os.getenv('GOOGLE_CREDS_JSON')
+  def __init__(self):
+        try:
+            if GOOGLE_CREDS_RAW:
+               
+                creds_dict = json.loads(GOOGLE_CREDS_RAW)
+               
+                self.gc = gspread.service_account_from_dict(creds_dict)
+                print("Connected to Google Sheets via Environment Secret.")
+            else:
+               
+                self.gc = gspread.service_account(filename='service_account.json')
+                print("Connected to Google Sheets via local service_account.json.")
 
-        if google_creds_raw:
-            # Parse the string into a dictionary
-            creds_dict = json.loads(google_creds_raw)
-            self.gc = gspread.service_account_from_dict(creds_dict)
-        else:
-            self.gc = gspread.service_account(filename='service_account.json')
-
-        # Open the specific sheet
-        self.sh = self.gc.open(SHEET_NAME).sheet1
+            # Open the specific sheet
+            self.sh = self.gc.open(SHEET_NAME).sheet1
+        except Exception as e:
+            print(f"Failed to initialize SheetManager: {e}")
 
     def sync_player(self, row_data):
         #get the list of values
